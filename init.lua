@@ -30,8 +30,9 @@ chat2.add_message = function(player, new_text, new_color)
     if not player then
         minetest.log("action", "Player "..name.." - chat2 player error")
     end
-    if (not chat2.firsthud[name]) or (not player:hud_get(id) )  then
+    if (not chat2.firsthud[name]) or (not player:hud_get(chat2.firsthud[name]) )  then
         minetest.log("action", "Player "..name.." - chat2 no hud yet error")
+        return
     end
     
     for id = firsthud, (firsthud + chat2.messages_on_screen - 1) do
@@ -54,10 +55,10 @@ chat2.send_message = function(player, message, color)
     
     line1 = string.sub(message, 1, chat2.chat_width)
     if string.len(message) > chat2.chat_width then
-        line2 = string.sub(message, chat2.chat_width, (chat2.chat_width * 2))
+        line2 = "   "..string.sub(message, chat2.chat_width, (chat2.chat_width * 2))
     end
     if string.len(message) > (chat2.chat_width * 2) then
-        line3 = string.sub(message, (chat2.chat_width * 2), (chat2.chat_width * 3))
+        line3 = "   "..string.sub(message, (chat2.chat_width * 2), (chat2.chat_width * 3))
     end
 
     chat2.add_message(player, line1, color)
