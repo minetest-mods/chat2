@@ -52,22 +52,70 @@ chat2.send_message = function(player, message, color)
     local line1 = nil   --allow message to span at most to three lines. more is not ok for public chat.
     local line2 = nil
     local line3 = nil
+    local symbols = ''
+    for i = 1, #message do
+        if 
+            bit.band( string.byte(message, i), 20) == 20 and    --is space symbol
+            string.len(symbols) > (chat2.chat_width - 8) and    --space have priority for breaking lines
+            (
+                not line1 or
+                not line2 or
+                not line3
+            )
+        then
+            if not line1 then
+                line1 = symbols
+                symbols = ''
+            elseif not line2 then
+                line2 = symbols
+                symbols = ''
+            elseif not line3 then
+                line3 = symbols
+                symbols = ''
+            end
+        elseif
+            (bit.band( string.byte(message, i), 128) == 0 or bit.band( string.byte(message, i), 192) == 192) and  --is ascii or first byte of unicode
+            string.len(symbols) > (chat2.chat_width - 1) and
+            (
+                not line1 or
+                not line2 or
+                not line3
+            )
+        then
+            if not line1 then
+                line1 = symbols
+                symbols = ''
+            elseif not line2 then
+                line2 = symbols
+                symbols = ''
+            elseif not line3 then
+                line3 = symbols
+                symbols = ''
+            end
+        elseif line1 and line2 and line3 then   --stop when all three lines filled
+            break
+        end
+        symbols = symbols..message:sub(i,i)
+    end
     
-    line1 = string.sub(message, 1, chat2.chat_width)
-    if string.len(message) > chat2.chat_width then
-        line2 = "   "..string.sub(message, chat2.chat_width, (chat2.chat_width * 2))
+    if not line1 and symbols then   --when message is shorten than line
+        line1 = symbols
+    elseif not line2 and symbols then   --when message is shorten than line
+        line2 = symbols
+    elseif not line3 and symbols then   --when message is shorten than line
+        line3 = symbols
     end
-    if string.len(message) > (chat2.chat_width * 2) then
-        line3 = "   "..string.sub(message, (chat2.chat_width * 2), (chat2.chat_width * 3))
+    
+    if line1 then
+        chat2.add_message(player, line1, color)
     end
-
-    chat2.add_message(player, line1, color)
     if line2 then
         chat2.add_message(player, line2, color)
     end
     if line3 then
         chat2.add_message(player, line3, color)
     end
+    
     if message ~= '' then
         chat2.lastmessagetimes[player:get_player_name()] = minetest.get_gametime()
     end
