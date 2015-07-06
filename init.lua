@@ -55,7 +55,7 @@ chat2.send_message = function(player, message, color)
     local symbols = ''
     for i = 1, #message do
         if 
-            bit.band( string.byte(message, i), 20) == 20 and    --is space symbol
+            bit.band( string.byte(message, i), 32) == 32 and    --is space symbol
             string.len(symbols) > (chat2.chat_width - 8) and    --space have priority for breaking lines
             (
                 not line1 or
