@@ -55,7 +55,7 @@ chat2.send_message = function(player, message, color)
     local symbols = ''
     for i = 1, #message do
         if 
-            bit.band( string.byte(message, i), 32) == 32 and    --is space symbol
+            string.byte(message, i) == 32 and    --is space symbol
             string.len(symbols) > (chat2.chat_width - 8) and    --space have priority for breaking lines
             (
                 not line1 or
@@ -74,7 +74,7 @@ chat2.send_message = function(player, message, color)
                 symbols = ''
             end
         elseif
-            (bit.band( string.byte(message, i), 128) == 0 or bit.band( string.byte(message, i), 192) == 192) and  --is ascii or first byte of unicode
+            (string.byte(message, i) < 128 or string.byte(message, i) >= 192) and  --is ascii or first byte of unicode
             string.len(symbols) > (chat2.chat_width - 1) and
             (
                 not line1 or
@@ -194,7 +194,8 @@ minetest.register_on_chat_message(function(name, message)
         local submes_p = submes
         local name_p = players[i]:get_player_name()
         
-        if not submes_p and chat2.users[name_p] and string.find(message, name_p, 1, true) ~= nil then
+        --if not submes_p and chat2.users[name_p] and string.find(message, name_p, 1, true) ~= nil then
+        if not submes_p and chat2.users[name_p] and string.find( string.lower(message), string.lower(name_p), 1, true) ~= nil then
             fmt_p = "<%s> %s"
             color_p = 0x00FF00
             submes_p = message
@@ -203,7 +204,8 @@ minetest.register_on_chat_message(function(name, message)
         if not submes_p and chat2.users[name_p] and chat2.additionalfilters[name_p] then
             local additionalfound = false
             for n = 1, #chat2.additionalfilters[name_p] do
-                if additionalfound or name == chat2.additionalfilters[name_p][n] or string.find(message, chat2.additionalfilters[name_p][n], 1, true) ~= nil then
+                --if additionalfound or name == chat2.additionalfilters[name_p][n] or string.find(message, chat2.additionalfilters[name_p][n], 1, true) ~= nil then
+                if additionalfound or name == chat2.additionalfilters[name_p][n] or string.find( string.lower(message), string.lower(chat2.additionalfilters[name_p][n]), 1, true) ~= nil then
                     additionalfound = true
                 end
             end
