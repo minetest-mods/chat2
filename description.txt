@@ -1,0 +1,1 @@
+Complements game built-in chat or replaces it.
