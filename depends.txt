@@ -1,1 +1,2 @@
 chat_anticurse?
+chat_antiflood?

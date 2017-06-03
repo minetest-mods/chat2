@@ -34,7 +34,7 @@ chat2.add_message = function(player, new_text, new_color)
         minetest.log("action", "Player "..name.." - chat2 no hud yet error")
         return
     end
-    
+
     for id = firsthud, (firsthud + chat2.messages_on_screen - 1) do
         hud = player:hud_get(id)
         if hud and hud.name == "chat2" then
@@ -54,7 +54,7 @@ chat2.send_message = function(player, message, color)
     local line3 = nil
     local symbols = ''
     for i = 1, #message do
-        if 
+        if
             string.byte(message, i) == 32 and    --is space symbol
             string.len(symbols) > (chat2.chat_width - 8) and    --space have priority for breaking lines
             (
@@ -97,7 +97,7 @@ chat2.send_message = function(player, message, color)
         end
         symbols = symbols..message:sub(i,i)
     end
-    
+
     if not line1 and symbols then   --when message is shorten than line
         line1 = symbols
     elseif not line2 and symbols then   --when message is shorten than line
@@ -105,7 +105,7 @@ chat2.send_message = function(player, message, color)
     elseif not line3 and symbols then   --when message is shorten than line
         line3 = symbols
     end
-    
+
     if line1 then
         chat2.add_message(player, line1, color)
     end
@@ -115,7 +115,7 @@ chat2.send_message = function(player, message, color)
     if line3 then
         chat2.add_message(player, line3, color)
     end
-    
+
     if message ~= '' then
         chat2.lastmessagetimes[player:get_player_name()] = minetest.get_gametime()
     end
@@ -153,33 +153,24 @@ minetest.register_on_leaveplayer(function(player)
 end)
 
 minetest.register_on_chat_message(function(name, message)
-    
+
     local fmt = nil
     local color = nil
     local submes = nil
     local player = minetest.get_player_by_name(name)
     local players = minetest.get_connected_players()
-    
+
     if chat2.speedlimit[name]==nil then
         chat2.speedlimit[name] = true
     else
         return
-    end
-    
-    if chat_anticurse then
-        local uncensored = chat_anticurse.check_message(name, message)
-        if uncensored == 2 or uncensored > 2 then
-            return true
-        elseif uncensored == 1 then
-            return
-        end
     end
 
     submes = string.match(message, "^/(.+)")
     if submes then
         return
     end
-    
+
     submes = string.match(message, "^!(.+)")
     if submes then
         fmt = "<%s> %s"
@@ -193,14 +184,14 @@ minetest.register_on_chat_message(function(name, message)
         local color_p = color
         local submes_p = submes
         local name_p = players[i]:get_player_name()
-        
+
         --if not submes_p and chat2.users[name_p] and string.find(message, name_p, 1, true) ~= nil then
         if not submes_p and chat2.users[name_p] and string.find( string.lower(message), string.lower(name_p), 1, true) ~= nil then
             fmt_p = "<%s> %s"
             color_p = 0x00FF00
             submes_p = message
         end
-        
+
         if not submes_p and chat2.users[name_p] and chat2.additionalfilters[name_p] then
             local additionalfound = false
             for n = 1, #chat2.additionalfilters[name_p] do
@@ -224,18 +215,18 @@ minetest.register_on_chat_message(function(name, message)
                 submes_p = message
             end
         end
-        
+
         if not submes_p and chat2.users[name_p] == 2 then
             fmt_p = "<%s> %s"
             color_p = 0xFFFFFF
             submes_p = message
         end
-        
+
         if submes_p and chat2.users[name_p] then
             chat2.send_message(players[i], string.format(fmt_p, name, submes_p), color_p)
         end
     end
-    
+
     return
 end)
 
@@ -243,27 +234,21 @@ if minetest.chatcommands["msg"] then
     local old_command = minetest.chatcommands["msg"].func
     minetest.chatcommands["msg"].func = function(name, param)
         local sendto, message = param:match("^(%S+)%s(.+)$")
+
+        -- Check if old /msg was succeful
+        local result, msg = old_command(name, param)
+
         if sendto and message and chat2.users[sendto] then
-
-            if chat_anticurse then
-                local uncensored = chat_anticurse.check_message(name, message)
-                if uncensored == 2 or uncensored > 2 then
-                    return old_command(name, param)
-                elseif uncensored == 1 then
-                    return old_command(name, param)
-                end
-            end
-
             local player = minetest.get_player_by_name(sendto)
             local sender = minetest.get_player_by_name(name)
-            if player and sender then
+            if result and player and sender then
                 chat2.send_message(player, string.format("<%s> %s", name, message), 0xFF00FF)
                 chat2.send_message(sender, string.format("<%s> %s", name, message), 0xF000F0)
                 minetest.log("action", "chat2 msg:"..string.format("<%s> %s", name, message))
             end
 
         end
-        return old_command(name, param)
+        return result, msg
     end
 end
 
@@ -281,7 +266,7 @@ minetest.register_chatcommand("chat2", {
             minetest.chat_send_player(name, 'First, please turn chat2 on.')
             return
         end
-        
+
         if param == "*" then
             if chat2.users[name] == 1 then
                 chat2.users[name] = 2
@@ -294,7 +279,7 @@ minetest.register_chatcommand("chat2", {
             end
             return
         end
-        
+
         --user add additional search strings
         if param and #param > 0 then
             local parameters = {}
@@ -313,7 +298,7 @@ minetest.register_chatcommand("chat2", {
             end
             return
         end
-            
+
         if chat2.users[name] ~= nil then
             for i = 1, chat2.messages_on_screen do
                 chat2.send_message(player, '', 0x000000)
@@ -336,15 +321,15 @@ minetest.register_globalstep(function(dtime)
 	if timer >= 3 then
         chat2.speedlimit = {}
 		timer = 0
-        
+
         --clean chat
         local players = minetest.get_connected_players()
         for i = 1, #players do
             local name = players[i]:get_player_name()
-            if 
-                chat2.lastmessagetimes[name] and 
-                (minetest.get_gametime() - chat2.lastmessagetimes[name]) > 90 
-            then 
+            if
+                chat2.lastmessagetimes[name] and
+                (minetest.get_gametime() - chat2.lastmessagetimes[name]) > 90
+            then
                 chat2.send_message(players[i], '', 0x000000)
                 if (minetest.get_gametime() - chat2.lastmessagetimes[name]) > (90 + chat2.messages_on_screen * 3) then
                     chat2.lastmessagetimes[name] = nil
