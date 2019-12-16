@@ -1,13 +1,16 @@
--- Minetest 0.4.12+ mod: chat2
--- chat2 is mod for minetest game created by Andrey. It's purpose is to improve or replace game built in chat.
---  + Higlight some messages in different colors - nearby talk, PM messages, messages with your name in it, shouts(!)
---  + Also can show all regular chat messages (use "/chat2 *" command)
---  + Switch on/off (use "/chat2" command)
---  + Old messages dissapear after some time
---  - Problems with unicode symbols on some clients
+--[[ 
+Minetest 0.4.16+ mod: chat2
+chat2 is mod for Minetest, created by Andrey. It's purpose is to improve or replace game built-in chat:
 
---  This mod is Free and Open Source Software, released under the LGPL 2.1 or later.
---  I used this mod:https://github.com/vegasd/minetest-mods/blob/master/kmchat/init.lua as example for how to use hud api.
+  + Higlight some messages in different colors - nearby talk, PM messages, messages with your name in it, shouts(!)
+  + Also can show all regular chat messages (use "/chat2 *" command)
+  + Switch on/off (use "/chat2" command)
+  + Old messages dissapear after some time
+  - Problems with unicode symbols on some clients
+
+This mod is Free and Open Source Software, released under the GNU LGPLv2.1 or later.
+I used this mod:https://github.com/vegasd/minetest-mods/blob/master/kmchat/init.lua as example for how to use hud api.
+--]]
 
 chat2 = {}
 chat2.speedlimit = {}
@@ -178,7 +181,7 @@ minetest.register_on_chat_message(function(name, message)
         minetest.log("action", "chat2 !:"..string.format(fmt, name, submes))
     end
 
-    local senderpos = player:getpos()
+    local senderpos = player:get_pos()
     for i = 1, #players do
         local fmt_p = fmt
         local color_p = color
@@ -208,7 +211,7 @@ minetest.register_on_chat_message(function(name, message)
         end
 
         if not submes_p and chat2.users[name_p] and name_p ~= name then
-            recieverpos = players[i]:getpos()
+            recieverpos = players[i]:get_pos()
             if vector.distance(senderpos, recieverpos) < 12 then
                 fmt_p = "<%s> %s"
                 color_p = 0x88FFFF
@@ -259,7 +262,7 @@ minetest.register_chatcommand("chat2", {
 	func = function(name, param)
         local player = minetest.get_player_by_name(name)
         if not player then
-            return false, "chat2: Player not found"
+            return false, "chat2: Player not found."
         end
 
         if chat2.users[name] == nil and param and #param > 0 then
